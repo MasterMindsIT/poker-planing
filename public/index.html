@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Poker Team</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #111827;
+            --panel: #f8fafc;
+            --ink: #18212f;
+            --muted: #64748b;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --accent: #f59e0b;
+            --felt: #0f8b5f;
+            --felt-dark: #075f43;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: #f8fafc;
+            background:
+                radial-gradient(circle at top left, rgba(37, 99, 235, 0.30), transparent 34rem),
+                radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.22), transparent 30rem),
+                linear-gradient(135deg, #0f172a 0%, #18212f 48%, #111827 100%);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .app-shell {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 34px 0 48px;
+        }
+
+        .brand-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 34px;
+        }
+
+        .brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            color: #111827;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            box-shadow: 0 14px 30px rgba(249, 115, 22, 0.25);
+        }
+
+        .brand-pill {
+            color: #dbeafe;
+            border: 1px solid rgba(219, 234, 254, 0.22);
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(14px);
+            font-size: 0.88rem;
+        }
+
+        .card-login {
+            overflow: hidden;
+            color: var(--ink);
+            background: rgba(248, 250, 252, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            border-radius: 22px;
+            box-shadow: 0 24px 70px rgba(2, 6, 23, 0.38);
+        }
+
+        .card-login .card-body { padding: 32px; }
+        .card-title { font-weight: 850; color: #0f172a; }
+        .form-label { color: #334155; font-weight: 700; }
+
+        .ended-panel {
+            max-width: 680px;
+            margin: 34px auto 0;
+            padding: clamp(28px, 5vw, 46px);
+            color: #0f172a;
+            text-align: center;
+            background: rgba(248, 250, 252, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.74);
+            border-radius: 22px;
+            box-shadow: 0 24px 70px rgba(2, 6, 23, 0.38);
+        }
+
+        .ended-kicker {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            padding: 7px 13px;
+            color: #065f46;
+            background: #d1fae5;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .ended-title {
+            margin-bottom: 14px;
+            color: #0f172a;
+            font-size: clamp(2rem, 5vw, 3.3rem);
+            font-weight: 950;
+        }
+
+        .ended-message {
+            max-width: 520px;
+            margin: 0 auto 24px;
+            color: #475569;
+            font-size: 1.08rem;
+            line-height: 1.6;
+        }
+
+        .form-control {
+            min-height: 48px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            color: #0f172a;
+            background: white;
+            box-shadow: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+        }
+
+        .btn {
+            border-radius: 12px;
+            font-weight: 800;
+        }
+
+        .btn-primary {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 14px 24px rgba(37, 99, 235, 0.26);
+        }
+
+        .btn-success {
+            border-color: #059669;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 14px 24px rgba(16, 185, 129, 0.24);
+        }
+
+        .room-header {
+            padding: 18px 0 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .room-title {
+            margin: 0;
+            font-size: clamp(1.35rem, 3vw, 2.25rem);
+            font-weight: 850;
+        }
+
+        .room-title span { color: #fde68a; }
+
+        .sm-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #422006;
+            background: #fbbf24;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 0.92rem;
+            font-weight: 850;
+        }
+
+        #btn-copy-link {
+            color: #dbeafe;
+            border-color: rgba(147, 197, 253, 0.56);
+            background: rgba(15, 23, 42, 0.42);
+        }
+
+        #btn-copy-link:hover {
+            color: #0f172a;
+            background: #bfdbfe;
+        }
+
+        .summary-panel {
+            color: white;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(125, 211, 252, 0.28);
+            border-radius: 18px;
+            box-shadow: 0 20px 50px rgba(2, 6, 23, 0.24);
+            backdrop-filter: blur(16px);
+        }
+
+        .summary-label {
+            color: rgba(255, 255, 255, 0.92);
+            font-weight: 850;
+        }
+
+        .poker-table-container {
+            position: relative;
+            min-height: 360px;
+            margin: 28px 0 26px;
+            padding: clamp(28px, 5vw, 52px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            background:
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.12), transparent 46%),
+                linear-gradient(135deg, var(--felt), var(--felt-dark));
+            border: 12px solid #7c3aed;
+            border-radius: 120px;
+            box-shadow:
+                inset 0 0 40px rgba(0, 0, 0, 0.36),
+                0 28px 70px rgba(2, 6, 23, 0.36);
+        }
+
+        .poker-table-container:empty::before {
+            content: "Esperando jugadores";
+            color: rgba(255, 255, 255, 0.72);
+            font-weight: 800;
+        }
+
+        .user-seat {
+            width: 118px;
+            min-height: 126px;
+            padding: 12px;
+            color: #0f172a;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.78);
+            border-radius: 16px;
+            box-shadow: 0 12px 28px rgba(2, 6, 23, 0.22);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-card {
+            width: 52px;
+            height: 72px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            font-size: 1.45rem;
+            font-weight: 900;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .table-card.hidden {
+            color: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent),
+                repeating-linear-gradient(45deg, #1d4ed8, #1d4ed8 9px, #3b82f6 9px, #3b82f6 18px);
+        }
+
+        .table-card.revealed {
+            color: #0f172a;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.14);
+        }
+
+        #cards-container {
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .hand-title {
+            color: #e2e8f0;
+            font-weight: 850;
+        }
+
+        .card-poker {
+            width: 66px;
+            height: 90px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            font-size: 1.6rem;
+            font-weight: 950;
+            background: #ffffff;
+            border: 1px solid rgba(226, 232, 240, 0.96);
+            border-radius: 14px;
+            box-shadow: 0 12px 24px rgba(2, 6, 23, 0.24);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .card-poker:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 20px 34px rgba(2, 6, 23, 0.28);
+        }
+
+        .card-poker.selected {
+            color: #111827;
+            background: linear-gradient(135deg, #fde68a, #f59e0b);
+            border-color: #f97316;
+            transform: translateY(-10px);
+            box-shadow: 0 22px 38px rgba(245, 158, 11, 0.28);
+        }
+
+        .summary-vote-group {
+            width: 88px;
+            min-height: 94px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            border-radius: 14px;
+        }
+
+        .summary-vote-name {
+            width: 100%;
+            color: #0f172a;
+            font-size: 0.78rem;
+            font-weight: 850;
+        }
+
+        .summary-vote-group .table-card {
+            width: 34px;
+            height: 46px;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+
+        .summary-card-group { display: flex; flex-direction: column; align-items: center; }
+        .summary-card-count { margin-bottom: 6px; color: #fde68a; font-size: 0.9rem; font-weight: 850; }
+        .summary-card-group .table-card {
+            width: 42px;
+            height: 58px;
+            font-size: 1.15rem;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 576px) {
+            .app-shell { width: min(100% - 20px, 1120px); padding-top: 18px; }
+            .brand-bar { align-items: flex-start; flex-direction: column; margin-bottom: 22px; }
+            .brand-pill { font-size: 0.8rem; }
+            .card-login .card-body { padding: 24px; }
+            .room-header { gap: 14px; }
+            .poker-table-container {
+                min-height: 260px;
+                padding: 22px;
+                border-width: 8px;
+                border-radius: 48px;
+                gap: 10px;
+            }
+            .user-seat { width: 84px; min-height: 106px; padding: 8px; font-size: 0.78rem; }
+            .table-card { width: 38px; height: 52px; font-size: 1.05rem; }
+            .card-poker { width: 50px; height: 68px; font-size: 1.2rem; border-radius: 11px; }
+            #sm-controls .btn { width: 100%; margin: 0 0 10px !important; }
+        }
+    </style>
+</head>
+<body>
+<main class="app-shell">
+    <header class="brand-bar">
+        <div class="brand-mark">
+            <div class="brand-icon">PP</div>
+            <span>Planning Poker Team</span>
+        </div>
+        <div class="brand-pill">Estimaciones claras para el equipo</div>
+    </header>
+
+    <section id="login-section" class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card card-login">
+                <div class="card-body" id="login-body">
+                    <!-- Se inyecta dinamicamente segun si hay UUID en la URL o no -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="poker-section" class="d-none">
+        <div class="room-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <h2 class="room-title">Sala: <span id="display-room"></span></h2>
+            <div id="sm-badge-container" class="d-none text-end">
+                <span class="sm-badge">Scrum Master</span><br>
+                <button id="btn-copy-link" class="btn btn-sm mt-2">Copiar enlace</button>
+            </div>
+        </div>
+
+        <div id="vote-summary" class="summary-panel shadow mb-4 d-none">
+            <div class="p-4 text-center">
+                <h4 class="text-info mb-3">Resumen de la votacion</h4>
+                <div class="row align-items-center">
+                    <div class="col-md-4 mb-3 mb-md-0 border-end border-secondary">
+                        <h6 class="summary-label text-uppercase">Promedio</h6>
+                        <div id="summary-average" class="display-3 fw-bold text-warning">0</div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="summary-label text-uppercase mb-3">Resumen por voto</h6>
+                        <div id="summary-totals" class="d-flex justify-content-center flex-wrap gap-4 mb-4"></div>
+                        <h6 class="summary-label text-uppercase mb-3">Votos por persona</h6>
+                        <div id="summary-cards" class="d-flex justify-content-center flex-wrap gap-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="poker-table-container" id="poker-table"></div>
+
+        <div id="sm-controls" class="text-center mb-4 d-none">
+            <button id="btn-reveal" class="btn btn-light btn-lg mx-2 text-primary fw-bold shadow">Ver resumen</button>
+            <button id="btn-reset" class="btn btn-danger btn-lg mx-2 fw-bold shadow">Volver a Jugar</button>
+            <button id="btn-end-game" class="btn btn-warning btn-lg mx-2 text-dark fw-bold shadow">Terminar partida</button>
+        </div>
+
+        <div class="text-center mt-4">
+            <h5 class="hand-title mb-3">Tu mano</h5>
+            <div class="d-flex justify-content-center flex-wrap gap-3" id="cards-container">
+                <div class="card card-poker" data-value="1">1</div>
+                <div class="card card-poker" data-value="2">2</div>
+                <div class="card card-poker" data-value="3">3</div>
+                <div class="card card-poker" data-value="5">5</div>
+                <div class="card card-poker" data-value="8">8</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ended-section" class="d-none">
+        <div class="ended-panel">
+            <div class="ended-kicker">Partida terminada</div>
+            <h1 class="ended-title">Buen cierre, equipo</h1>
+            <p class="ended-message">
+                La sala fue cerrada por el Scrum Master. Ya tienen lo importante: una conversacion alineada,
+                decisiones mas claras y una estimacion lista para avanzar.
+            </p>
+            <a class="btn btn-primary btn-lg" href="/">Crear otra sala</a>
+        </div>
+    </section>
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
